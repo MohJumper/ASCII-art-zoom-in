@@ -1,0 +1,105 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'eclipse'	
+}
+
+repositories {
+	mavenCentral()
+}
+
+final def junitJupiterGroup = 'org.junit.jupiter'
+final def junitJupiterVersion = '5.6.0'
+
+final def junitPlatformGroup = 'org.junit.platform'
+final def junitPlatformVersion = '1.4.0'
+
+dependencies {
+	testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
+
+	testImplementation(group: junitJupiterGroup, name: 'junit-jupiter-api', version: junitJupiterVersion)    
+	testRuntimeOnly(group: junitJupiterGroup, name: 'junit-jupiter-engine', version: junitJupiterVersion)
+	testRuntimeOnly(group: junitJupiterGroup, name: 'junit-jupiter-params', version: junitJupiterVersion)
+
+	testRuntimeOnly(group: junitPlatformGroup, name: 'junit-platform-launcher', version: junitPlatformVersion)
+	testRuntimeOnly(group: junitPlatformGroup, name: 'junit-platform-runner', version: junitPlatformVersion)
+}
+
+// The additional eclipse.gradle that resolves the JUnit dependencies 
+eclipse {
+	project {
+		natures 'org.eclipse.buildship.core.gradleprojectnature'
+	}
+
+	classpath {
+		file {
+			whenMerged {
+				entries.findAll { isModule(it) }.each { //(1)
+					it.entryAttributes['module'] = 'true'
+				}
+
+				entries.findAll { isSource(it) && isTestScope(it) }.each {
+					it.entryAttributes['test'] = 'true'
+				}
+
+				entries.findAll { isLibrary(it) && isTestScope(it) }.each {
+					it.entryAttributes['test'] = 'true'
+				}
+			}
+		}
+
+		defaultOutputDir = file('build')
+		downloadSources = true
+		downloadJavadoc = true
+	}
+}
+
+boolean isLibrary(entry) { return entry.properties.kind.equals('lib') }
+boolean isTestScope(entry) { return entry.entryAttributes.get('gradle_used_by_scope').equals('test'); }
+
+boolean isModule(entry) { isLibrary(entry) && !isTestScope(entry); }
+boolean isSource(entry) { return entry.properties.kind.equals('src'); }
+
+task test_ascii (type: Test) {
+	filter.includeTestsMatching "AsciiArtImageTest"
+}
+task test_ascii_2 (type: Test) {
+	filter.includeTestsMatching "AsciiArtImageTest2"
+}
+task test_ascii_3 (type: Test) {
+	filter.includeTestsMatching "AsciiArtImageTest3"
+}
+//add task for each test file
+
+tasks.withType(Test)
+{
+	useJUnitPlatform()
+	outputs.upToDateWhen {false}
+	testLogging {
+		exceptionFormat = 'full'
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+	}
+}
+
+sourceSets {
+	if (project.gradle.startParameter.taskNames.contains("test_ascii")) {
+		test.java.include '**/AsciiArtImageTest.java'
+		sourceSets.main.java.excludes = ['Main*']
+	}
+	else if (project.gradle.startParameter.taskNames.contains("test_ascii_2")) {
+		test.java.include '**/AsciiArtImageTest2.java'
+		sourceSets.main.java.excludes = ['Main*']
+	}
+	else if (project.gradle.startParameter.taskNames.contains("test_ascii_3")) {
+		test.java.include '**/AsciiArtImageTest3.java'
+		sourceSets.main.java.excludes = ['Main*']
+	}
+}
+
+sourceSets.main.java.srcDirs = ['src/main/java']
+
+mainClassName = "Main"
+
+run {
+	standardInput = System.in
+}

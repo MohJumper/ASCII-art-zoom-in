@@ -1,0 +1,44 @@
+{
+	"tests": [
+	{
+		"name": "Run tests",
+		"setup": "",
+		"run": "timeout 60 gradle test_ascii",
+		"input": "",
+		"output": "",
+		"comparison": "included",
+		"timeout": 1,
+		"points": 20
+	},
+	{
+		"name": "Run tests",
+		"setup": "",
+		"run": "timeout 60 gradle test_ascii_2",
+		"input": "",
+		"output": "",
+		"comparison": "included",
+		"timeout": 1,
+		"points": 20
+	},
+	{
+		"name": "Run tests",
+		"setup": "rm -f src/test/java/test-out.txt",
+		"run": "timeout 60 gradle test_ascii_3",
+		"input": "",
+		"output": "",
+		"comparison": "included",
+		"timeout": 1,
+		"points": 20
+	},
+	{
+		"name": "Run main",
+		"setup": "rm -f boat-out.txt; cat keyboard-input.txt | timeout 60 gradle run",
+		"run": "cat boat-out.txt",
+		"input": "",
+		"output": "..'',,    nn;;;;;;;;;;;;;;::      MM;;;;;;;;;;;;;;;;",
+		"comparison": "included",
+		"timeout": 1,
+		"points":20 
+	}
+	]
+}
